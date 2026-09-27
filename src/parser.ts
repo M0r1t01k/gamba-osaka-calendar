@@ -9,18 +9,18 @@ export function parseGames(html: string, season: string): Game[] {
   const out: Game[] = [];
   // The official page renders each match as a link/card. Keep the card boundary
   // deliberately broad so minor CSS changes do not break extraction.
-  const cards = [...html.matchAll(/<li\b[^>]*>([\s\S]*?<a\b[^>]*href=["'][^"']*\/game\/[^"']*["'][\s\S]*?)<\/li>/gi)];
+  const cards = [...html.matchAll(/<li\b[^>]*>([\s\S]*?game_schedule_list_detail_sche_date[\s\S]*?)<\/li>/gi)];
   for (const card of cards) {
     const block = card[1];
-    const link = block.match(/<a\b[^>]*href=["']([^"']*\/game\/[^"']*)["']/i);
-    if (!link) continue;
-    const href = link[1].startsWith('http') ? link[1] : `https://www.gamba-osaka.net${link[1]}`;
+    const link = block.match(/<a\b[^>]*href=["']([^"']*\/c\/game\/\d+\/\d+\.html)["']/i);
+    const href = link ? (link[1].startsWith('http') ? link[1] : `https://www.gamba-osaka.net${link[1]}`) : undefined;
     const text = clean(block);
+    const meta = clean(block.match(/<div[^>]*class=["'][^"']*game_schedule_list_sub["'][^>]*>([\s\S]*?)<\/div>/i)?.[1] || '');
     const date = text.match(/(20\d{2})[./年-](\d{1,2})[./月-](\d{1,2})|(?<!\d)(\d{1,2})[./月](\d{1,2})/);
     const time = text.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/)?.[0];
-    const side = text.includes('HOME') ? 'HOME' : text.includes('AWAY') ? 'AWAY' : 'UNKNOWN';
-    const comp = text.match(/(明治安田[^ ]*J1[^ ]*|Jリーグ[^ ]*ルヴァン[^ ]*|天皇杯|AFC[^ ]*|ACL[^ ]*)/)?.[1] || '公式戦';
-    const round = text.match(/(第\d+節|\bMD\d+\b|\d+回戦|ラウンド\d+)/)?.[1];
+    const side = meta.includes('HOME') ? 'HOME' : meta.includes('AWAY') ? 'AWAY' : 'UNKNOWN';
+    const comp = meta.match(/(明治安田[^ ]*J1[^ ]*|Jリーグ[^ ]*ルヴァン[^ ]*|天皇杯|AFC[^ ]*|ACL[^ ]*)/)?.[1] || '公式戦';
+    const round = meta.match(/(第\d+節|\bMD\d+\b|\d+回戦|ラウンド\d+)/)?.[1];
     const versus = text.match(/(?:vs\.?|VS\.?|対戦)\s*([\p{L}\p{N}ー・ー＆&\- ]{2,30})/u)?.[1]?.trim();
     const venue = text.match(/＠\s*([^ ]{2,30})/)?.[1];
     if (!date && !versus) continue;
