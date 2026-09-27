@@ -9,11 +9,13 @@ export function parseGames(html: string, season: string): Game[] {
   const out: Game[] = [];
   // The official page renders each match as a link/card. Keep the card boundary
   // deliberately broad so minor CSS changes do not break extraction.
-  const links = [...html.matchAll(/<a\b[^>]*href=["']([^"']*\/game\/[^"']*)["'][^>]*>([\s\S]*?)<\/a>/gi)];
-  for (const m of links) {
-    const href = m[1].startsWith('http') ? m[1] : `https://www.gamba-osaka.net${m[1]}`;
-    const start = Math.max(0, m.index! - 1800), end = Math.min(html.length, m.index! + m[0].length + 1800);
-    const text = clean(html.slice(start, end));
+  const cards = [...html.matchAll(/<li\b[^>]*>([\s\S]*?<a\b[^>]*href=["'][^"']*\/game\/[^"']*["'][\s\S]*?)<\/li>/gi)];
+  for (const card of cards) {
+    const block = card[1];
+    const link = block.match(/<a\b[^>]*href=["']([^"']*\/game\/[^"']*)["']/i);
+    if (!link) continue;
+    const href = link[1].startsWith('http') ? link[1] : `https://www.gamba-osaka.net${link[1]}`;
+    const text = clean(block);
     const date = text.match(/(20\d{2})[./年-](\d{1,2})[./月-](\d{1,2})|(?<!\d)(\d{1,2})[./月](\d{1,2})/);
     const time = text.match(/\b([01]?\d|2[0-3]):[0-5]\d\b/)?.[0];
     const side = text.includes('HOME') ? 'HOME' : text.includes('AWAY') ? 'AWAY' : 'UNKNOWN';
