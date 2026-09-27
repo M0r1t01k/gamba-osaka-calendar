@@ -27,7 +27,7 @@ export function parseGames(html: string, season: string): Game[] {
     const dateIso = date ? (date[1] ? `${date[1]}-${date[2].padStart(2,'0')}-${date[3].padStart(2,'0')}` : `${season.slice(0,2) === '26' ? '2026' : '20'+season.slice(0,2)}-${date[4].padStart(2,'0')}-${date[5].padStart(2,'0')}`) : undefined;
     // Official match detail links are the best stable identity. Fall back to
     // competition/round/date only when a card has no detail link.
-    const detailId = href.match(/\/game\/[^/?#]+(?:\/[^/?#]+)*/i)?.[0];
+    const detailId = href?.match(/\/game\/[^/?#]+(?:\/[^/?#]+)*/i)?.[0];
     const key = detailId ? `${season}:${detailId}` : [season, esc(comp), esc(round || ''), dateIso || 'tbd', side].join(':');
     if (!out.some(g => g.uid === key)) out.push({uid: `${key}@gamba-calendar`, season, competition: comp, round, date: dateIso, time, opponent: versus, venue, homeAway: side as Game['homeAway'], url: href});
   }
