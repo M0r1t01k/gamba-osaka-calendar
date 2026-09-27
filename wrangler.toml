@@ -1,0 +1,13 @@
+name = "gamba-osaka-calendar"
+main = "src/index.ts"
+compatibility_date = "2026-01-01"
+
+[triggers]
+crons = ["0 18 * * *"]
+
+[[kv_namespaces]]
+binding = "CALENDAR"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+SEASON = "2627"
